@@ -6,7 +6,7 @@ const doc = {
     description: "Recipe Application API",
   },
   // host: "localhost:5001/api",
-  host: "https://food-recipe.skyraantech.com/server/",
+  host: "https://food-recipe.skyraantech.com/server",
   // schemes: ["http"],
   schemes: ["https"],
 };
