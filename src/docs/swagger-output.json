@@ -1,0 +1,716 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Recipe API",
+    "description": "Recipe Application API",
+    "version": "1.0.0"
+  },
+  "host": "localhost:5001/api",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/upload": {
+      "post": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/upload-multiple": {
+      "post": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/auth/create-guest": {
+      "post": {
+        "tags": [
+          "1.Auth"
+        ],
+        "summary": "Create Guest User",
+        "description": "Create temporary guest account",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "device_id": {
+                  "type": "string",
+                  "example": "ANDROID_123456"
+                },
+                "country": {
+                  "type": "string",
+                  "example": "India"
+                },
+                "food_type": {
+                  "type": "string",
+                  "example": "nonveg"
+                },
+                "prefer_lang": {
+                  "type": "string",
+                  "example": "en"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Guest Created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "number",
+                  "example": 1
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "user_id": {
+                      "type": "string",
+                      "example": "TEMP_1750000000000"
+                    }
+                  }
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Guest Created"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/request-otp": {
+      "post": {
+        "tags": [
+          "1.Auth"
+        ],
+        "summary": "Request OTP",
+        "description": "Send OTP to email address",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "test@gmail.com"
+                },
+                "type": {
+                  "type": "string",
+                  "example": "1"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OTP Sent Successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "number",
+                  "example": 1
+                },
+                "data": {
+                  "type": "array",
+                  "example": [],
+                  "items": {}
+                },
+                "message": {
+                  "type": "string",
+                  "example": "OTP Sent Successfully"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Validation Error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "number",
+                  "example": 0
+                },
+                "data": {
+                  "type": "array",
+                  "example": [],
+                  "items": {}
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Email is required"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/verify-otp": {
+      "post": {
+        "tags": [
+          "1.Auth"
+        ],
+        "summary": "Verify OTP",
+        "description": "Verify OTP",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "test@gmail.com"
+                },
+                "otp": {
+                  "type": "string",
+                  "example": "1234"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OTP Veified Successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "number",
+                  "example": 1
+                },
+                "data": {
+                  "type": "array",
+                  "example": [],
+                  "items": {}
+                },
+                "message": {
+                  "type": "string",
+                  "example": "OTP Verified Successfully"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/signup": {
+      "post": {
+        "tags": [
+          "1.Auth"
+        ],
+        "summary": "Sign UP",
+        "description": "User Signup by email ",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user_name": {
+                  "type": "string",
+                  "example": "kamalesh"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "abc@gmail.com"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "12345678"
+                },
+                "device_id": {
+                  "type": "string",
+                  "example": "Android1234"
+                },
+                "device_type": {
+                  "type": "string",
+                  "example": "android or IOs"
+                },
+                "device_token": {
+                  "type": "string",
+                  "example": "FCM12345"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User Sign up Successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "number",
+                  "example": 1
+                },
+                "data": {
+                  "type": "array",
+                  "example": [],
+                  "items": {}
+                },
+                "message": {
+                  "type": "string",
+                  "example": "User Sign up Successfully"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "1.Auth"
+        ],
+        "summary": "User Login",
+        "description": "Login using email and password",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "abc@gmail.com"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "12345678"
+                },
+                "device_id": {
+                  "type": "string",
+                  "example": "android_12345"
+                },
+                "device_type": {
+                  "type": "string",
+                  "example": "android"
+                },
+                "device_token": {
+                  "type": "string",
+                  "example": "FCM12345"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login Successful",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "number",
+                  "example": 1
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "token": {
+                        "type": "string",
+                        "example": "jwt_token"
+                      }
+                    }
+                  }
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Login successful"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "tags": [
+          "1.Auth"
+        ],
+        "summary": "Password Updated successfully",
+        "description": "Password updated sucessfully",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "abc@gmail.com"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "12345678"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Password updated Successful",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "number",
+                  "example": 1
+                },
+                "data": {
+                  "type": "array",
+                  "example": [],
+                  "items": {}
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Password updated successful"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/google-login": {
+      "post": {
+        "tags": [
+          "1.Auth"
+        ],
+        "summary": "Google Login",
+        "description": "Login using Google ID Token",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "google_token": {
+                  "type": "string",
+                  "example": "eyJhbGciOiJSUzI1NiIs..."
+                },
+                "device_id": {
+                  "type": "string",
+                  "example": "android_12345"
+                },
+                "device_type": {
+                  "type": "string",
+                  "example": "android"
+                },
+                "device_token": {
+                  "type": "string",
+                  "example": "FCM12345"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Google Login Successful",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "number",
+                  "example": 1
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "token": {
+                        "type": "string",
+                        "example": "jwt_token"
+                      }
+                    }
+                  }
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Login successful"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/src/add-tips": {
+      "post": {
+        "tags": [
+          "2.Tips"
+        ],
+        "summary": "Create or Update Tip",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "image": {
+                  "type": "string",
+                  "example": "1"
+                },
+                "status": {
+                  "type": "string",
+                  "example": "active"
+                },
+                "translations": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "lang_code": {
+                        "type": "string",
+                        "example": "ta"
+                      },
+                      "desc": {
+                        "type": "string",
+                        "example": "அதிக தண்ணீர் குடிக்கவும்"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/src/get-tips": {
+      "post": {
+        "tags": [
+          "2.Tips"
+        ],
+        "summary": "Get All Tips",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "status": {
+                  "type": "string",
+                  "example": "active"
+                },
+                "lang_code": {
+                  "type": "string",
+                  "example": "ta"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/src/get-random-tips": {
+      "post": {
+        "tags": [
+          "2.Tips"
+        ],
+        "summary": "Get Random Tips Based On date",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "c_date": {
+                  "type": "string",
+                  "example": "2026-06-01"
+                },
+                "lang_code": {
+                  "type": "string",
+                  "example": "ta"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/src/add-country": {
+      "post": {
+        "tags": [
+          "3.Country"
+        ],
+        "summary": "Create or Update Country",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "image": {
+                  "type": "string",
+                  "example": "1"
+                },
+                "status": {
+                  "type": "string",
+                  "example": "active"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "India"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/src/get-country": {
+      "post": {
+        "tags": [
+          "3.Country"
+        ],
+        "summary": "Get All Countries",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "status": {
+                  "type": "string",
+                  "example": "active"
+                },
+                "lang_code": {
+                  "type": "string",
+                  "example": "ta"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    }
+  }
+}
