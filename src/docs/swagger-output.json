@@ -5,10 +5,10 @@
     "description": "Recipe Application API",
     "version": "1.0.0"
   },
-  "host": "localhost:5001/api",
+  "host": "https://food-recipe.skyraantech.com/server/",
   "basePath": "/",
   "schemes": [
-    "http"
+    "https"
   ],
   "paths": {
     "/upload": {
