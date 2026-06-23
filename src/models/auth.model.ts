@@ -124,13 +124,14 @@ export class AuthModel {
       `
     INSERT INTO users
     (
+    user_id,
       name,
       email,
       password
     )
-    VALUES (?, ?, ?)
+    VALUES (?, ?, ? ,?)
     `,
-      [data.user_name, data.email, data.password],
+      [data.user_id, data.user_name, data.email, data.password],
     );
 
     return result.insertId;
