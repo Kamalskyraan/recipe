@@ -89,15 +89,17 @@ class AuthModel {
         return rows?.[0] || null;
     }
     async createUser(data) {
+        const { user_id, user_name, email, password } = data;
         const result = await (0, helper_1.executeQuery)(`
     INSERT INTO users
     (
+    user_id,
       name,
       email,
       password
     )
-    VALUES (?, ?, ?)
-    `, [data.user_name, data.email, data.password]);
+    VALUES (?, ?, ? ,?)
+    `, [user_id, user_name, email, password]);
         return result.insertId;
     }
     async addUserDevice(data) {

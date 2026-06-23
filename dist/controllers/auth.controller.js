@@ -124,7 +124,7 @@ class AuthController {
                 device_id: device_id,
             });
             await authMdl.addUserDevice({
-                user_id: userId,
+                user_id: customUserId,
                 device_id,
                 device_type,
                 device_token,
@@ -132,6 +132,7 @@ class AuthController {
             return (0, helper_1.sendResponse)(res, 200, 1, [{ token, user_id: customUserId }], "Signup successful", []);
         }
         catch (err) {
+            console.log(err);
             return (0, helper_1.sendResponse)(res, 500, 0, [], "Internal Server Error", [
                 err.errors || err.message || err,
             ]);

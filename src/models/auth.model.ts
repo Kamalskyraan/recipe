@@ -120,7 +120,8 @@ export class AuthModel {
   }
 
   async createUser(data: any) {
-    console.log(data, "data");
+    const { user_id, user_name, email, password } = data;
+
     const result: any = await executeQuery(
       `
     INSERT INTO users
@@ -132,7 +133,7 @@ export class AuthModel {
     )
     VALUES (?, ?, ? ,?)
     `,
-      [data.user_id, data.user_name, data.email, data.password],
+      [user_id, user_name, email, password],
     );
 
     return result.insertId;
