@@ -120,6 +120,7 @@ export class AuthModel {
   }
 
   async createUser(data: any) {
+    console.log(data, "data");
     const result: any = await executeQuery(
       `
     INSERT INTO users
