@@ -110,7 +110,9 @@ class AuthController {
                 return (0, helper_1.sendResponse)(res, 200, 0, [], "Please verify OTP first", []);
             }
             const hashedPassword = await bcryptjs_1.default.hash(password, 10);
+            const customUserId = await (0, helper_1.createUserId)();
             const userId = await authMdl.createUser({
+                user_id: customUserId,
                 user_name,
                 email,
                 password: hashedPassword,
@@ -127,7 +129,7 @@ class AuthController {
                 device_type,
                 device_token,
             });
-            return (0, helper_1.sendResponse)(res, 200, 1, [{ token }], "Signup successful", []);
+            return (0, helper_1.sendResponse)(res, 200, 1, [{ token, user_id: customUserId }], "Signup successful", []);
         }
         catch (err) {
             return (0, helper_1.sendResponse)(res, 500, 0, [], "Internal Server Error", [

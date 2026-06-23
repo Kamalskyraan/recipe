@@ -1,5 +1,10 @@
 import { Request, Response } from "express";
-import { generateToken, sendResponse, validateRequest } from "../utils/helper";
+import {
+  createUserId,
+  generateToken,
+  sendResponse,
+  validateRequest,
+} from "../utils/helper";
 import { AuthModel } from "../models/auth.model";
 import { sendMail } from "../services/email";
 import dotenv from "dotenv";
@@ -161,8 +166,10 @@ export class AuthController {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
+      const customUserId = await createUserId();
 
       const userId = await authMdl.createUser({
+        user_id: customUserId,
         user_name,
         email,
         password: hashedPassword,
@@ -181,7 +188,14 @@ export class AuthController {
         device_type,
         device_token,
       });
-      return sendResponse(res, 200, 1, [{ token }], "Signup successful", []);
+      return sendResponse(
+        res,
+        200,
+        1,
+        [{ token, user_id: customUserId }],
+        "Signup successful",
+        [],
+      );
     } catch (err: any) {
       return sendResponse(res, 500, 0, [], "Internal Server Error", [
         err.errors || err.message || err,

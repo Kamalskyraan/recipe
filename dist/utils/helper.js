@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyToken = exports.generateToken = exports.sendResponse = exports.validateRequest = void 0;
+exports.createUserId = exports.verifyToken = exports.generateToken = exports.sendResponse = exports.validateRequest = void 0;
 exports.executeQuery = executeQuery;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const db_1 = require("../config/db");
@@ -51,3 +51,7 @@ const verifyToken = (token) => {
     return jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
 };
 exports.verifyToken = verifyToken;
+const createUserId = () => {
+    return `USR${Date.now()}${Math.floor(Math.random() * 1000)}`;
+};
+exports.createUserId = createUserId;

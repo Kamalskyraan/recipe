@@ -61,3 +61,7 @@ export const generateToken = (payload: object): string => {
 export const verifyToken = (token: string) => {
   return jwt.verify(token, process.env.JWT_SECRET as string);
 };
+
+export const createUserId = (): string => {
+  return `USR${Date.now()}${Math.floor(Math.random() * 1000)}`;
+};
