@@ -138,57 +138,6 @@ class AuthController {
             ]);
         }
     }
-    static async googleLogin(req, res) {
-        try {
-            const { google_token, device_id, device_type, device_token } = await (0, helper_1.validateRequest)(req.body, validator_1.googleLoginSchema);
-            const ticket = await googleClient.verifyIdToken({
-                idToken: google_token,
-                audience: process.env.GOOGLE_CLIENT_ID,
-            });
-            const payload = ticket.getPayload();
-            if (!payload || !payload.email) {
-                return (0, helper_1.sendResponse)(res, 200, 0, [], "Invalid Google token", []);
-            }
-            const email = payload.email;
-            const user_name = payload.name || "";
-            let user = await authMdl.findUserByEmail(email);
-            let userId;
-            if (!user) {
-                userId = await authMdl.createUser({
-                    user_name,
-                    email,
-                    password: "",
-                    login_type: "google",
-                });
-            }
-            else {
-                userId = user.id;
-            }
-            const token = jsonwebtoken_1.default.sign({
-                user_id: userId,
-                device_id,
-                device_type,
-            }, process.env.JWT_SECRET, {
-                expiresIn: "30d",
-            });
-            await authMdl.addUserDevice({
-                user_id: userId,
-                device_id,
-                device_type,
-                device_token,
-                jwt_token: token,
-            });
-            return (0, helper_1.sendResponse)(res, 200, 1, [
-                {
-                    user_id: userId,
-                    token,
-                },
-            ], "Login successful", []);
-        }
-        catch (err) {
-            return (0, helper_1.sendResponse)(res, 500, 0, [], err.message, []);
-        }
-    }
     static async login(req, res) {
         try {
             const { email, password, device_id, device_type, device_token } = await (0, helper_1.validateRequest)(req.body, validator_1.loginSchema);
@@ -208,7 +157,7 @@ class AuthController {
                 expiresIn: "30d",
             });
             await authMdl.addUserDevice({
-                user_id: user.id,
+                user_id: user.user_id,
                 device_id,
                 device_type,
                 device_token,
@@ -216,7 +165,7 @@ class AuthController {
             });
             return (0, helper_1.sendResponse)(res, 200, 1, [
                 {
-                    user_id: user.id,
+                    user_id: user.user_id,
                     token,
                 },
             ], "Login successful", []);
@@ -240,6 +189,82 @@ class AuthController {
         }
         catch (err) {
             return (0, helper_1.sendResponse)(res, 500, 0, [], err.message, []);
+        }
+    }
+    static async logout(req, res) {
+        try {
+            const { user_id, device_id } = req.body;
+            const data = await authMdl.logout(user_id, device_id);
+            return (0, helper_1.sendResponse)(res, 200, 1, [], "Logout successfully", []);
+        }
+        catch (error) {
+            console.log(error);
+            return res.status(500).json({
+                success: 0,
+                message: "Internal Server Error",
+            });
+        }
+    }
+    static async googleLogin(req, res) {
+        try {
+            const { google_token, device_id, device_type, device_token } = await (0, helper_1.validateRequest)(req.body, validator_1.googleLoginSchema);
+            const ticket = await googleClient.verifyIdToken({
+                idToken: google_token,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+            const payload = ticket.getPayload();
+            if (!payload) {
+                return (0, helper_1.sendResponse)(res, 200, 0, [], "Invalid Google Token", []);
+            }
+            const { sub: google_id, email, name, picture, email_verified } = payload;
+            if (!email) {
+                return (0, helper_1.sendResponse)(res, 200, 0, [], "Google email not found", []);
+            }
+            let user = await authMdl.findUserByEmail(email);
+            let userId;
+            if (!user) {
+                userId = await authMdl.createUser({
+                    user_name: name || "",
+                    email,
+                    password: null,
+                    login_type: "google",
+                    google_id,
+                    profile_image: picture || "",
+                    email_verified: email_verified ? 1 : 0,
+                });
+            }
+            else {
+                userId = user.user_id;
+                await authMdl.updateGoogleInfo({
+                    user_id: userId,
+                    google_id,
+                    profile_image: picture || "",
+                });
+            }
+            const token = jsonwebtoken_1.default.sign({
+                user_id: userId,
+                device_id,
+                device_type,
+            }, process.env.JWT_SECRET, {
+                expiresIn: "30d",
+            });
+            await authMdl.addUserDevice({
+                user_id: userId,
+                device_id,
+                device_type,
+                device_token,
+                jwt_token: token,
+            });
+            return (0, helper_1.sendResponse)(res, 200, 1, [
+                {
+                    user_id: userId,
+                    token,
+                },
+            ], "Google login successful", []);
+        }
+        catch (err) {
+            console.log(err);
+            return (0, helper_1.sendResponse)(res, 500, 0, [], err.errors || "Google login failed", []);
         }
     }
 }

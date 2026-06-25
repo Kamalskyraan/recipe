@@ -1,22 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sourceController = void 0;
+exports.UploadController = exports.sourceController = void 0;
 const helper_1 = require("../utils/helper");
 const validator_1 = require("../validations/validator");
 const src_model_1 = require("../models/src.model");
 const translator_1 = require("../services/translator");
+const srcMdl = new src_model_1.sourceModel();
 class sourceController {
     static async addUpdateTips(req, res) {
         try {
             const { id, image, status, translations } = await (0, helper_1.validateRequest)(req.body, validator_1.saveTipSchema);
             if (id) {
-                const existingTip = await this.srcMdl.tipFind({
+                const existingTip = await srcMdl.tipFind({
                     id,
                 });
                 if (!existingTip || existingTip.length === 0) {
                     return (0, helper_1.sendResponse)(res, 200, 0, [], "Tip not found", []);
                 }
-                const updatedTip = await this.srcMdl.tipUpdate({
+                const updatedTip = await srcMdl.tipUpdate({
                     id,
                     image,
                     status,
@@ -24,7 +25,7 @@ class sourceController {
                 });
                 return (0, helper_1.sendResponse)(res, 200, 1, updatedTip, "Tip updated successfully");
             }
-            const createdTip = await this.srcMdl.tipCreate({
+            const createdTip = await srcMdl.tipCreate({
                 image,
                 translations,
             });
@@ -37,7 +38,7 @@ class sourceController {
     static async getAllTips(req, res) {
         try {
             const { id, status, lang_code = "en" } = req.body;
-            const tipsData = await this.srcMdl.tipFind({
+            const tipsData = await srcMdl.tipFind({
                 id,
                 status,
                 lang_code,
@@ -51,7 +52,7 @@ class sourceController {
     static async getRandomTips(req, res) {
         try {
             const { lang_code = "en", c_date } = req.body;
-            const tip = await this.srcMdl.getRandomTip({
+            const tip = await srcMdl.getRandomTip({
                 lang_code,
                 c_date,
             });
@@ -70,7 +71,7 @@ class sourceController {
             const { id, image, name, status } = await (0, helper_1.validateRequest)(req.body, validator_1.addCountrySchema);
             let countryId;
             if (id) {
-                await this.srcMdl.updateCountry({
+                await srcMdl.updateCountry({
                     id,
                     image,
                     status,
@@ -78,14 +79,14 @@ class sourceController {
                 countryId = id;
             }
             else {
-                const result = await this.srcMdl.addCountry({
+                const result = await srcMdl.addCountry({
                     image,
                     status,
                 });
                 countryId = result.insertId;
             }
-            const languages = await this.srcMdl.getLanguages();
-            await this.srcMdl.saveTranslation({
+            const languages = await srcMdl.getLanguages();
+            await srcMdl.saveTranslation({
                 module: "country",
                 record_id: countryId,
                 field_name: "name",
@@ -96,7 +97,7 @@ class sourceController {
                 if (lang.code === "en")
                     continue;
                 const translatedValue = await (0, translator_1.translateText)(name, lang.code);
-                await this.srcMdl.saveTranslation({
+                await srcMdl.saveTranslation({
                     module: "country",
                     record_id: countryId,
                     field_name: "name",
@@ -114,7 +115,7 @@ class sourceController {
     static async getCountry(req, res) {
         try {
             const { id, status, lang_code = "en" } = req.body;
-            const data = await this.srcMdl.getCountry({
+            const data = await srcMdl.getCountry({
                 id,
                 status,
                 lang_code,
@@ -125,13 +126,12 @@ class sourceController {
             return (0, helper_1.sendResponse)(res, 500, 0, [], "Internal Server Error", err.message || err);
         }
     }
-    //
     static async addUpdateLanguage(req, res) {
         try {
             const { id, image, name, status } = await (0, helper_1.validateRequest)(req.body, validator_1.addCountrySchema);
             let countryId;
             if (id) {
-                await this.srcMdl.updateCountry({
+                await srcMdl.updateCountry({
                     id,
                     image,
                     status,
@@ -139,14 +139,14 @@ class sourceController {
                 countryId = id;
             }
             else {
-                const result = await this.srcMdl.addCountry({
+                const result = await srcMdl.addCountry({
                     image,
                     status,
                 });
                 countryId = result.insertId;
             }
-            const languages = await this.srcMdl.getLanguages();
-            await this.srcMdl.saveTranslation({
+            const languages = await srcMdl.getLanguages();
+            await srcMdl.saveTranslation({
                 module: "country",
                 record_id: countryId,
                 field_name: "name",
@@ -157,7 +157,7 @@ class sourceController {
                 if (lang.code === "en")
                     continue;
                 const translatedValue = await (0, translator_1.translateText)(name, lang.code);
-                await this.srcMdl.saveTranslation({
+                await srcMdl.saveTranslation({
                     module: "country",
                     record_id: countryId,
                     field_name: "name",
@@ -174,35 +174,63 @@ class sourceController {
     }
 }
 exports.sourceController = sourceController;
-sourceController.srcMdl = new src_model_1.sourceModel();
+//
 class UploadController {
-    static async uploadFiles(req, res) {
+    static async upload(req, res) {
         try {
             const files = req.files;
-            if (!files || files.length === 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: "No files uploaded",
-                });
+            if (!files?.length) {
+                return (0, helper_1.sendResponse)(res, 200, 0, [], "File is required", []);
             }
-            return res.status(200).json({
-                success: true,
-                count: files.length,
-                files: files.map((file) => ({
-                    originalName: file.originalname,
-                    fileName: file.filename,
-                    mimeType: file.mimetype,
-                    size: file.size,
-                    path: file.path,
-                })),
+            const uploadedFiles = files.map((file) => {
+                const mimeType = file.mimetype;
+                let mediaType = "file";
+                if (mimeType.startsWith("image/")) {
+                    mediaType = "image";
+                }
+                else if (mimeType.startsWith("video/")) {
+                    mediaType = "video";
+                }
+                else if (mimeType.startsWith("audio/")) {
+                    mediaType = "audio";
+                }
+                return {
+                    org_name: file.originalname,
+                    file_name: file.filename,
+                    mime_type: mimeType,
+                    media_type: mediaType,
+                    file_size: file.size,
+                    path: file.path.replace(/\\/g, "/"),
+                    url: `${file.path.replace(/\\/g, "/")}`,
+                };
             });
+            const data = await srcMdl.insertMultipleMedia(uploadedFiles);
+            const responseData = uploadedFiles.map((file, index) => ({
+                id: data[index],
+                ...file,
+                url: `${process.env.ASSET_URL}${file?.url}`,
+            }));
+            return (0, helper_1.sendResponse)(res, 200, 1, responseData, "Files uploaded successfully", []);
         }
         catch (error) {
-            return res.status(500).json({
-                success: false,
-                message: error.message,
+            console.error(error);
+            return (0, helper_1.sendResponse)(res, 500, 0, [], error.message || "Internal Server Error", []);
+        }
+    }
+    static async getUploads(req, res) {
+        try {
+            const { page = 1, limit = 20, media_type, id } = req.body;
+            const result = await srcMdl.getUploads({
+                page: Number(page),
+                limit: Number(limit),
+                media_type,
+                id,
             });
+            return (0, helper_1.sendResponse)(res, 200, 1, result, "Uploads fetched successfully", []);
+        }
+        catch (error) {
+            return (0, helper_1.sendResponse)(res, 500, 0, [], error.message || "Internal Server Error", []);
         }
     }
 }
-exports.default = UploadController;
+exports.UploadController = UploadController;

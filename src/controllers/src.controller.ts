@@ -3,9 +3,9 @@ import { sendResponse, validateRequest } from "../utils/helper";
 import { addCountrySchema, saveTipSchema } from "../validations/validator";
 import { sourceModel } from "../models/src.model";
 import { translateText } from "../services/translator";
-export class sourceController {
-  private static srcMdl = new sourceModel();
 
+const srcMdl = new sourceModel();
+export class sourceController {
   static async addUpdateTips(req: Request, res: Response) {
     try {
       const { id, image, status, translations } = await validateRequest(
@@ -14,7 +14,7 @@ export class sourceController {
       );
 
       if (id) {
-        const existingTip = await this.srcMdl.tipFind({
+        const existingTip = await srcMdl.tipFind({
           id,
         });
 
@@ -22,7 +22,7 @@ export class sourceController {
           return sendResponse(res, 200, 0, [], "Tip not found", []);
         }
 
-        const updatedTip = await this.srcMdl.tipUpdate({
+        const updatedTip = await srcMdl.tipUpdate({
           id,
           image,
           status,
@@ -38,7 +38,7 @@ export class sourceController {
         );
       }
 
-      const createdTip = await this.srcMdl.tipCreate({
+      const createdTip = await srcMdl.tipCreate({
         image,
         translations,
       });
@@ -60,7 +60,7 @@ export class sourceController {
     try {
       const { id, status, lang_code = "en" } = req.body;
 
-      const tipsData = await this.srcMdl.tipFind({
+      const tipsData = await srcMdl.tipFind({
         id,
         status,
         lang_code,
@@ -90,7 +90,7 @@ export class sourceController {
     try {
       const { lang_code = "en", c_date } = req.body;
 
-      const tip = await this.srcMdl.getRandomTip({
+      const tip = await srcMdl.getRandomTip({
         lang_code,
         c_date,
       });
@@ -130,7 +130,7 @@ export class sourceController {
       let countryId;
 
       if (id) {
-        await this.srcMdl.updateCountry({
+        await srcMdl.updateCountry({
           id,
           image,
           status,
@@ -138,7 +138,7 @@ export class sourceController {
 
         countryId = id;
       } else {
-        const result = await this.srcMdl.addCountry({
+        const result = await srcMdl.addCountry({
           image,
           status,
         });
@@ -146,9 +146,9 @@ export class sourceController {
         countryId = result.insertId;
       }
 
-      const languages = await this.srcMdl.getLanguages();
+      const languages = await srcMdl.getLanguages();
 
-      await this.srcMdl.saveTranslation({
+      await srcMdl.saveTranslation({
         module: "country",
         record_id: countryId,
         field_name: "name",
@@ -161,7 +161,7 @@ export class sourceController {
 
         const translatedValue = await translateText(name, lang.code);
 
-        await this.srcMdl.saveTranslation({
+        await srcMdl.saveTranslation({
           module: "country",
           record_id: countryId,
           field_name: "name",
@@ -188,7 +188,7 @@ export class sourceController {
     try {
       const { id, status, lang_code = "en" } = req.body;
 
-      const data = await this.srcMdl.getCountry({
+      const data = await srcMdl.getCountry({
         id,
         status,
         lang_code,
@@ -207,7 +207,6 @@ export class sourceController {
     }
   }
 
-  //
   static async addUpdateLanguage(req: Request, res: Response) {
     try {
       const { id, image, name, status } = await validateRequest(
@@ -218,7 +217,7 @@ export class sourceController {
       let countryId;
 
       if (id) {
-        await this.srcMdl.updateCountry({
+        await srcMdl.updateCountry({
           id,
           image,
           status,
@@ -226,7 +225,7 @@ export class sourceController {
 
         countryId = id;
       } else {
-        const result = await this.srcMdl.addCountry({
+        const result = await srcMdl.addCountry({
           image,
           status,
         });
@@ -234,9 +233,9 @@ export class sourceController {
         countryId = result.insertId;
       }
 
-      const languages = await this.srcMdl.getLanguages();
+      const languages = await srcMdl.getLanguages();
 
-      await this.srcMdl.saveTranslation({
+      await srcMdl.saveTranslation({
         module: "country",
         record_id: countryId,
         field_name: "name",
@@ -249,7 +248,7 @@ export class sourceController {
 
         const translatedValue = await translateText(name, lang.code);
 
-        await this.srcMdl.saveTranslation({
+        await srcMdl.saveTranslation({
           module: "country",
           record_id: countryId,
           field_name: "name",
@@ -273,34 +272,99 @@ export class sourceController {
   }
 }
 
-export default class UploadController {
-  static async uploadFiles(req: Request, res: Response) {
+//
+
+export class UploadController {
+  static async upload(req: Request, res: Response) {
     try {
       const files = req.files as Express.Multer.File[];
 
-      if (!files || files.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: "No files uploaded",
-        });
+      if (!files?.length) {
+        return sendResponse(res, 200, 0, [], "File is required", []);
       }
 
-      return res.status(200).json({
-        success: true,
-        count: files.length,
-        files: files.map((file) => ({
-          originalName: file.originalname,
-          fileName: file.filename,
-          mimeType: file.mimetype,
-          size: file.size,
-          path: file.path,
-        })),
+      const uploadedFiles = files.map((file) => {
+        const mimeType = file.mimetype;
+
+        let mediaType = "file";
+
+        if (mimeType.startsWith("image/")) {
+          mediaType = "image";
+        } else if (mimeType.startsWith("video/")) {
+          mediaType = "video";
+        } else if (mimeType.startsWith("audio/")) {
+          mediaType = "audio";
+        }
+
+        return {
+          org_name: file.originalname,
+          file_name: file.filename,
+          mime_type: mimeType,
+          media_type: mediaType,
+          file_size: file.size,
+          path: file.path.replace(/\\/g, "/"),
+          url: `${file.path.replace(/\\/g, "/")}`,
+        };
       });
+
+      const data = await srcMdl.insertMultipleMedia(uploadedFiles);
+
+      const responseData = uploadedFiles.map((file, index) => ({
+        id: data[index],
+        ...file,
+        url: `${process.env.ASSET_URL}${file?.url}`,
+      }));
+
+      return sendResponse(
+        res,
+        200,
+        1,
+        responseData,
+        "Files uploaded successfully",
+        [],
+      );
     } catch (error: any) {
-      return res.status(500).json({
-        success: false,
-        message: error.message,
+      console.error(error);
+
+      return sendResponse(
+        res,
+        500,
+        0,
+        [],
+        error.message || "Internal Server Error",
+        [],
+      );
+    }
+  }
+
+  static async getUploads(req: Request, res: Response) {
+    try {
+      const { page = 1, limit = 20, media_type, id } = req.body;
+
+      const result = await srcMdl.getUploads({
+        page: Number(page),
+        limit: Number(limit),
+        media_type,
+        id,
       });
+
+      return sendResponse(
+        res,
+        200,
+        1,
+        result,
+        "Uploads fetched successfully",
+        [],
+      );
+    } catch (error: any) {
+      return sendResponse(
+        res,
+        500,
+        0,
+        [],
+        error.message || "Internal Server Error",
+        [],
+      );
     }
   }
 }

@@ -7,48 +7,50 @@ exports.upload = void 0;
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
-const uploadDir = path_1.default.join(process.cwd(), "uploads");
-if (!fs_1.default.existsSync(uploadDir)) {
-    fs_1.default.mkdirSync(uploadDir, { recursive: true });
-}
 const storage = multer_1.default.diskStorage({
-    destination: (_req, _file, cb) => {
-        cb(null, uploadDir);
+    destination: (req, file, cb) => {
+        let folder = "uploads/others";
+        if (file.mimetype.startsWith("image/")) {
+            folder = "uploads/images";
+        }
+        else if (file.mimetype.startsWith("video/")) {
+            folder = "uploads/videos";
+        }
+        else if (file.mimetype === "application/pdf") {
+            folder = "uploads/documents";
+        }
+        fs_1.default.mkdirSync(folder, { recursive: true });
+        cb(null, folder);
     },
-    filename: (_req, file, cb) => {
-        const uniqueName = Date.now() +
-            "-" +
+    filename: (req, file, cb) => {
+        const fileName = Date.now() +
+            "_" +
             Math.round(Math.random() * 1e9) +
             path_1.default.extname(file.originalname);
-        cb(null, uniqueName);
+        cb(null, fileName);
     },
 });
-const fileFilter = (_req, file, cb) => {
-    const allowedMimeTypes = [
-        // Images
+const fileFilter = (req, file, cb) => {
+    const allowedTypes = [
         "image/jpeg",
         "image/jpg",
         "image/png",
         "image/webp",
-        // Videos
         "video/mp4",
-        "video/mpeg",
-        "video/quicktime",
-        "video/x-msvideo",
-        // PDF
+        "video/mov",
         "application/pdf",
     ];
-    if (allowedMimeTypes.includes(file.mimetype)) {
+    if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
     }
     else {
-        cb(new Error("Only images, videos and pdf files are allowed"));
+        cb(new Error("Only Image, Video and PDF allowed"));
     }
 };
 exports.upload = (0, multer_1.default)({
     storage,
     fileFilter,
     limits: {
-        fileSize: 50 * 1024 * 1024,
+        fileSize: 50 * 1024 * 1024, // 50MB
     },
 });

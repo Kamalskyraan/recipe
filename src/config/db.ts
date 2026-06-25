@@ -13,6 +13,6 @@ export const db = mysql.createPool({
 //   host: "localhost",
 //   user: process.env.USER || "root",
 //   password: process.env.PASSWORD || "",
-//   database: process.env.DB || "recipe_app",
+//   database: process.env.DB || "recipe",
 //   connectionLimit: 10,
 // });

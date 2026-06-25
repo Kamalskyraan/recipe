@@ -13,20 +13,92 @@
     "paths": {
         "/upload": {
             "post": {
-                "description": "",
+                "tags": [
+                    "1.Upload"
+                ],
+                "summary": "Upload Files",
+                "description": "Upload single or multiple images, videos, and PDF files",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "parameters": [
+                    {
+                        "name": "files",
+                        "in": "formData",
+                        "type": "file",
+                        "required": true,
+                        "description": "Select one or more files"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "Files Uploaded Successfully"
+                    },
+                    "400": {
+                        "description": "No files uploaded"
                     }
                 }
             }
         },
-        "/upload-multiple": {
+        "/get-uploads": {
             "post": {
-                "description": "",
+                "tags": [
+                    "1.Upload"
+                ],
+                "summary": "Get Uploaded Files",
+                "description": "Fetch uploaded images, videos, PDFs with pagination and filters",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": false,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "page": {
+                                    "type": "number",
+                                    "example": 1
+                                },
+                                "limit": {
+                                    "type": "number",
+                                    "example": 10
+                                },
+                                "media_type": {
+                                    "type": "string",
+                                    "example": "image"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "example": "1,2,3"
+                                }
+                            }
+                        }
+                    }
+                ],
                 "responses": {
-                    "200": {
-                        "description": "OK"
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "success": {
+                                    "type": "number",
+                                    "example": 0
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "example": [],
+                                    "items": {}
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "Something went wrong"
+                                }
+                            },
+                            "xml": {
+                                "name": "main"
+                            }
+                        }
                     }
                 }
             }
@@ -377,6 +449,56 @@
                 }
             }
         },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "1.Auth"
+                ],
+                "summary": "User Logout",
+                "description": "Logout authenticated user",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "user_id": {
+                                    "example": "any"
+                                },
+                                "device_id": {
+                                    "example": "any"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Logout Successful",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "success": {
+                                    "type": "number",
+                                    "example": 1
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "Logout successful"
+                                }
+                            },
+                            "xml": {
+                                "name": "main"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/auth/reset-password": {
             "post": {
                 "tags": [
@@ -700,6 +822,48 @@
                                 "lang_code": {
                                     "type": "string",
                                     "example": "ta"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/user/update-profile": {
+            "post": {
+                "tags": [
+                    "3.USER"
+                ],
+                "summary": "Update Profile",
+                "description": "UPDATE PROFILE",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "user_id": {
+                                    "type": "string",
+                                    "example": "USR1782371436810602"
+                                },
+                                "user_name": {
+                                    "type": "string",
+                                    "example": "kamalesh"
+                                },
+                                "email": {
+                                    "type": "string",
+                                    "example": "test@gmail.com"
+                                },
+                                "profile_img": {
+                                    "type": "string",
+                                    "example": "1"
                                 }
                             }
                         }

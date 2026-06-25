@@ -149,6 +149,22 @@ router.post("/login",
     }
 */
 auth_controller_1.AuthController.login);
+router.post("/logout", 
+/*  #swagger.tags = ['1.Auth']
+    #swagger.summary = 'User Logout'
+    #swagger.description = 'Logout authenticated user'
+
+    
+
+    #swagger.responses[200] = {
+      description: 'Logout Successful',
+      schema: {
+        success: 1,
+        message: 'Logout successful'
+      }
+    }
+*/
+auth_controller_1.AuthController.logout);
 router.post("/reset-password", 
 /*  #swagger.tags = ['1.Auth']
     #swagger.summary = 'Password Updated successfully'

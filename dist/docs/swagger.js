@@ -6,8 +6,8 @@ const doc = {
         description: "Recipe Application API",
     },
     // host: "localhost:5001/api",
-    host: "food-recipe.skyraantech.com/server/api",
     // schemes: ["http"],
+    host: "food-recipe.skyraantech.com/server/api",
     schemes: ["https"],
 };
 const outputFile = "./swagger-output.json";

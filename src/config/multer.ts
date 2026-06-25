@@ -2,49 +2,49 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-const uploadDir = path.join(process.cwd(), "uploads");
-
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, uploadDir);
+  destination: (req, file, cb) => {
+    let folder = "uploads/others";
+
+    if (file.mimetype.startsWith("image/")) {
+      folder = "uploads/images";
+    } else if (file.mimetype.startsWith("video/")) {
+      folder = "uploads/videos";
+    } else if (file.mimetype === "application/pdf") {
+      folder = "uploads/documents";
+    }
+
+    fs.mkdirSync(folder, { recursive: true });
+
+    cb(null, folder);
   },
-  filename: (_req, file, cb) => {
-    const uniqueName =
+
+  filename: (req, file, cb) => {
+    const fileName =
       Date.now() +
-      "-" +
+      "_" +
       Math.round(Math.random() * 1e9) +
       path.extname(file.originalname);
 
-    cb(null, uniqueName);
+    cb(null, fileName);
   },
 });
 
-const fileFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
-  const allowedMimeTypes = [
-    // Images
+const fileFilter: multer.Options["fileFilter"] = (req, file, cb) => {
+  const allowedTypes = [
     "image/jpeg",
     "image/jpg",
     "image/png",
     "image/webp",
-
-    // Videos
     "video/mp4",
-    "video/mpeg",
-    "video/quicktime",
-    "video/x-msvideo",
-
-    // PDF
+    "video/mov",
     "application/pdf",
   ];
 
-  if (allowedMimeTypes.includes(file.mimetype)) {
+  if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Only images, videos and pdf files are allowed"));
+    cb(new Error("Only Image, Video and PDF allowed"));
   }
 };
 
@@ -52,6 +52,6 @@ export const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 50 * 1024 * 1024,
+    fileSize: 50 * 1024 * 1024, // 50MB
   },
 });

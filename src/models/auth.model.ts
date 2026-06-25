@@ -140,6 +140,7 @@ export class AuthModel {
   }
 
   async addUserDevice(data: any) {
+   
     return await executeQuery(
       `
     INSERT INTO user_devices
@@ -180,5 +181,50 @@ export class AuthModel {
     `,
       [password, email],
     );
+  }
+
+  async logout(user_id: string, device_id: string) {
+    await executeQuery(
+      `
+    UPDATE user_devices SET is_active = 0 WHERE user_id = ? AND  device_id = ?
+    `,
+      [user_id, device_id],
+    );
+  }
+
+  async getActiveDevice(user_id: string, device_id: string) {
+    const result = await executeQuery(
+      `
+    SELECT id
+    FROM user_devices
+    WHERE user_id = ?
+      AND device_id = ?
+      AND is_active = 1
+    LIMIT 1
+    `,
+      [user_id, device_id],
+    );
+
+    return result[0];
+  }
+
+  async updateGoogleInfo(data: any) {
+    const { user_id, google_id, profile_image } = data;
+    try {
+      const query = `
+      UPDATE users
+      SET 
+        google_id = ?,
+        profile_image = ?,
+        login_type = 'google'
+      WHERE user_id = ?
+    `;
+
+      await executeQuery(query, [google_id, profile_image, user_id]);
+
+      return true;
+    } catch (err) {
+      throw err;
+    }
   }
 }
