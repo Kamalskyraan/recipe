@@ -378,8 +378,7 @@ export class sourceModel {
       org_name,
       url,
       file_size,
-      created_at
-      
+    COALESCE(created_at, '') AS created_at
     FROM media
     ${whereClause}
     ORDER BY id DESC
