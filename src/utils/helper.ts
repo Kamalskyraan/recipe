@@ -65,3 +65,25 @@ export const verifyToken = (token: string) => {
 export const createUserId = (): string => {
   return `USR${Date.now()}${Math.floor(Math.random() * 1000)}`;
 };
+
+export const convertNullToString = (data: any): any => {
+  if (data === null || data === undefined) {
+    return "";
+  }
+
+  if (Array.isArray(data)) {
+    return data.map((item) => convertNullToString(item));
+  }
+
+  if (typeof data === "object") {
+    const result: any = {};
+
+    Object.keys(data).forEach((key) => {
+      result[key] = convertNullToString(data[key]);
+    });
+
+    return result;
+  }
+
+  return data;
+};

@@ -36,7 +36,7 @@ class userController {
             if (!data) {
                 return (0, helper_1.sendResponse)(res, 200, 0, [], "User not found", []);
             }
-            return (0, helper_1.sendResponse)(res, 200, 1, [data], "Profile fetched successfully", []);
+            return (0, helper_1.sendResponse)(res, 200, 1, [(0, helper_1.convertNullToString)(data)], "Profile fetched successfully", []);
         }
         catch (err) {
             return (0, helper_1.sendResponse)(res, 500, 0, [], err.message, []);

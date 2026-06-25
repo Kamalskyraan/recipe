@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createUserId = exports.verifyToken = exports.generateToken = exports.sendResponse = exports.validateRequest = void 0;
+exports.convertNullToString = exports.createUserId = exports.verifyToken = exports.generateToken = exports.sendResponse = exports.validateRequest = void 0;
 exports.executeQuery = executeQuery;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const db_1 = require("../config/db");
@@ -55,3 +55,20 @@ const createUserId = () => {
     return `USR${Date.now()}${Math.floor(Math.random() * 1000)}`;
 };
 exports.createUserId = createUserId;
+const convertNullToString = (data) => {
+    if (data === null || data === undefined) {
+        return "";
+    }
+    if (Array.isArray(data)) {
+        return data.map((item) => (0, exports.convertNullToString)(item));
+    }
+    if (typeof data === "object") {
+        const result = {};
+        Object.keys(data).forEach((key) => {
+            result[key] = (0, exports.convertNullToString)(data[key]);
+        });
+        return result;
+    }
+    return data;
+};
+exports.convertNullToString = convertNullToString;

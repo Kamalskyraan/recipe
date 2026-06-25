@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { sendResponse } from "../utils/helper";
+import { convertNullToString, sendResponse } from "../utils/helper";
 import { userModel } from "../models/user.model";
 
 const userMdl = new userModel();
@@ -47,7 +47,7 @@ export class userController {
         res,
         200,
         1,
-        [data],
+        [convertNullToString(data)],
         "Profile fetched successfully",
         [],
       );
