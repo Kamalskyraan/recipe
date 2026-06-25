@@ -3,10 +3,6 @@ import Joi from "joi";
 export const saveTipSchema = Joi.object({
   id: Joi.number().integer().optional(),
 
-  image: Joi.number().required().messages({
-    "any.required": "Image is required",
-  }),
-
   status: Joi.string().valid("active", "inactive").optional(),
 });
 

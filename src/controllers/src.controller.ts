@@ -8,42 +8,66 @@ const srcMdl = new sourceModel();
 export class sourceController {
   static async addUpdateTips(req: Request, res: Response) {
     try {
-      const { id, image, status, translations } = await validateRequest(
+      const { id, status, title } = await validateRequest(
         req.body,
         saveTipSchema,
       );
 
-      if (id) {
-        const existingTip = await srcMdl.tipFind({
-          id,
-        });
+      let tipId;
 
-        if (!existingTip || existingTip.length === 0) {
+      if (id) {
+        const existingTip = await srcMdl.tipFind({ id });
+
+        if (!existingTip?.length) {
           return sendResponse(res, 200, 0, [], "Tip not found", []);
         }
 
-        const updatedTip = await srcMdl.tipUpdate({
+        await srcMdl.tipUpdate({
           id,
-          image,
           status,
-          translations,
         });
 
-        return sendResponse(
-          res,
-          200,
-          1,
-          updatedTip,
-          "Tip updated successfully",
-        );
+        tipId = id;
+      } else {
+        const result = await srcMdl.tipCreate({
+          status,
+        });
+
+        tipId = result.insertId;
       }
 
-      const createdTip = await srcMdl.tipCreate({
-        image,
-        translations,
+      const languages = await srcMdl.getLanguages();
+
+      await srcMdl.saveTranslation({
+        module: "daily_tips",
+        record_id: tipId,
+        field_name: "title",
+        lang_code: "en",
+        value: title,
       });
 
-      return sendResponse(res, 200, 1, createdTip, "Tip created successfully");
+      for (const lang of languages) {
+        if (lang.code === "en") continue;
+
+        const translatedValue = await translateText(title, lang.code);
+
+        await srcMdl.saveTranslation({
+          module: "daily_tips",
+          record_id: tipId,
+          field_name: "title",
+          lang_code: lang.code,
+          value: translatedValue,
+        });
+      }
+
+      return sendResponse(
+        res,
+        200,
+        1,
+        [],
+        id ? "Tip updated successfully" : "Tip created successfully",
+        [],
+      );
     } catch (err: any) {
       return sendResponse(
         res,
@@ -339,11 +363,9 @@ export class UploadController {
 
   static async getUploads(req: Request, res: Response) {
     try {
-      const { page = 1, limit = 20, media_type, id } = req.body;
+      const { media_type, id } = req.body;
 
       const result = await srcMdl.getUploads({
-        page: Number(page),
-        limit: Number(limit),
         media_type,
         id,
       });

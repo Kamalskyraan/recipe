@@ -28,4 +28,31 @@ export class userController {
       return sendResponse(res, 500, 0, [], err.message, []);
     }
   }
+
+  static async GetProfileData(req: Request, res: Response) {
+    try {
+      const { user_id } = req.body;
+
+      if (!user_id) {
+        return sendResponse(res, 200, 0, [], "User ID is required", []);
+      }
+
+      const data = await userMdl.getProfileData(user_id);
+
+      if (!data) {
+        return sendResponse(res, 200, 0, [], "User not found", []);
+      }
+
+      return sendResponse(
+        res,
+        200,
+        1,
+        [data],
+        "Profile fetched successfully",
+        [],
+      );
+    } catch (err: any) {
+      return sendResponse(res, 500, 0, [], err.message, []);
+    }
+  }
 }

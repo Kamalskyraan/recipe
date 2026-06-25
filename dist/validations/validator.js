@@ -7,9 +7,6 @@ exports.resetPasswordSchema = exports.loginSchema = exports.googleLoginSchema = 
 const joi_1 = __importDefault(require("joi"));
 exports.saveTipSchema = joi_1.default.object({
     id: joi_1.default.number().integer().optional(),
-    image: joi_1.default.number().required().messages({
-        "any.required": "Image is required",
-    }),
     status: joi_1.default.string().valid("active", "inactive").optional(),
 });
 exports.addCountrySchema = joi_1.default.object({

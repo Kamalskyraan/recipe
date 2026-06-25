@@ -7,89 +7,61 @@ import {
 import { executeQuery } from "../utils/helper";
 
 export class sourceModel {
-  async tipCreate(data: any) {
-    const query = `
-    INSERT INTO daily_tips
-    (
-      tip_img,
-      status
-    )
-    VALUES (?, ?)
-  `;
+  async validateTranslationTranslations(translations: any[]) {
+    const errors: string[] = [];
 
-    const result: any = await executeQuery(query, [data.image, "active"]);
-
-    const tipId = result.insertId;
-
-    for (const lang of data.translations) {
-      await executeQuery(
-        `
-      INSERT INTO translations
-      (
-        module,
-        record_id,
-        field_name,
-        lang_code,
-        value
-      )
-      VALUES (?, ?, ?, ?, ?)
-      `,
-        ["daily_tips", tipId, "desc", lang.lang_code, lang.desc],
-      );
+    if (!translations || translations.length === 0) {
+      errors.push("At least one translation is required");
+      return errors;
     }
 
-    return tipId;
-  }
+    const requiredFields = ["lang_code", "title"];
+    const validLanguages = ["en", "es", "fr", "de", "hi", "ar", "zh", "ja"];
 
-  async tipUpdate(data: any) {
-    const fields = [];
-    const values = [];
+    for (const trans of translations) {
+      for (const field of requiredFields) {
+        if (!trans[field]) {
+          errors.push(`Missing required field: ${field} for translation`);
+        }
+      }
 
-    if (data.image !== undefined) {
-      fields.push("tip_img = ?");
-      values.push(data.image);
-    }
+      if (trans.lang_code && !validLanguages.includes(trans.lang_code)) {
+        errors.push(`Invalid language code: ${trans.lang_code}`);
+      }
 
-    if (data.status !== undefined) {
-      fields.push("status = ?");
-      values.push(data.status);
-    }
+      if (trans.title && trans.title.length > 255) {
+        errors.push(`Title too long for language ${trans.lang_code}`);
+      }
 
-    if (fields.length > 0) {
-      values.push(data.id);
-
-      await executeQuery(
-        `
-      UPDATE daily_tips
-      SET ${fields.join(", ")}
-      WHERE id = ?
-      `,
-        values,
-      );
-    }
-
-    if (data.translations?.length) {
-      for (const lang of data.translations) {
-        await executeQuery(
-          `
-        INSERT INTO translations
-        (
-          module,
-          record_id,
-          field_name,
-          lang_code,
-          value
-        )
-        VALUES (?, ?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE
-        value = VALUES(value)
-        `,
-          ["daily_tips", data.id, "desc", lang.lang_code, lang.desc],
-        );
+      if (trans.description && trans.description.length > 1000) {
+        errors.push(`Description too long for language ${trans.lang_code}`);
       }
     }
 
-    return data.id;
+    return errors;
+  }
+
+  async tipCreate(data: any) {
+    const query = `
+    INSERT INTO daily_tips (
+      status
+    )
+    VALUES ( ?)
+  `;
+
+    return await executeQuery(query, [data.status || "active"]);
+  }
+
+  async tipUpdate(data: any) {
+    const query = `
+    UPDATE daily_tips
+    SET
+  
+      status = ?
+    WHERE id = ?
+  `;
+
+    return await executeQuery(query, [data.status, data.id]);
   }
 
   async tipFind(data: IFindTip) {
@@ -98,7 +70,6 @@ export class sourceModel {
     let query = `
     SELECT
       t.id,
-      COALESCE(t.tip_img,'') AS tip_img,
       COALESCE(t.status,'') AS status,
       COALESCE(tr.value,'') AS \`desc\`
 
@@ -114,11 +85,6 @@ export class sourceModel {
   `;
 
     const values = [lang_code];
-
-    // if (id) {
-    //   query += ` AND t.id = ?`;
-    //   values.push(id);
-    // }
 
     if (status) {
       query += ` AND t.status = ?`;
@@ -367,12 +333,10 @@ export class sourceModel {
   }
 
   async getUploads(params: {
-    page: number;
-    limit: number;
     media_type?: string;
     id?: string | number | number[];
   }) {
-    const { page = 1, limit = 20, media_type, id } = params;
+    const { media_type, id } = params;
 
     const conditions: string[] = ["status = 'active'"];
     const queryParams: any[] = [];
@@ -407,50 +371,25 @@ export class sourceModel {
     const whereClause =
       conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-    const countQuery = `
-    SELECT COUNT(*) as total
-    FROM media
-    ${whereClause}
-  `;
-
-    const countResult: any = await executeQuery(countQuery, queryParams);
-
-    const total = countResult?.[0]?.total || 0;
-
-    const offset = (page - 1) * limit;
-
     const dataQuery = `
     SELECT
       id,
       file_name,
       org_name,
       url,
-      path,
-      mime_type,
-      media_type,
       file_size,
-      created_at,
-      updated_at
+      created_at
+      
     FROM media
     ${whereClause}
     ORDER BY id DESC
-    LIMIT ? OFFSET ?
+    
   `;
 
-    const rows: any = await executeQuery(dataQuery, [
-      ...queryParams,
-      limit,
-      offset,
-    ]);
+    const rows: any = await executeQuery(dataQuery, [...queryParams]);
 
     return {
       data: rows || [],
-      pagination: {
-        page,
-        limit,
-        total,
-        total_pages: Math.ceil(total / limit),
-      },
     };
   }
 }

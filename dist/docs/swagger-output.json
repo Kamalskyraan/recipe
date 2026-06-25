@@ -643,29 +643,13 @@
                                     "type": "number",
                                     "example": 1
                                 },
-                                "image": {
-                                    "type": "string",
-                                    "example": "1"
-                                },
                                 "status": {
                                     "type": "string",
-                                    "example": "active"
+                                    "example": "active or inactive"
                                 },
-                                "translations": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "lang_code": {
-                                                "type": "string",
-                                                "example": "ta"
-                                            },
-                                            "desc": {
-                                                "type": "string",
-                                                "example": "அதிக தண்ணீர் குடிக்கவும்"
-                                            }
-                                        }
-                                    }
+                                "title": {
+                                    "type": "string",
+                                    "example": "Drink More Water"
                                 }
                             }
                         }
@@ -864,6 +848,36 @@
                                 "profile_img": {
                                     "type": "string",
                                     "example": "1"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/user/get-profile": {
+            "post": {
+                "tags": [
+                    "3.USER"
+                ],
+                "summary": "Get Profile",
+                "description": "GET PROFILE DATA",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "user_id": {
+                                    "type": "string",
+                                    "example": "USR1782371436810602"
                                 }
                             }
                         }

@@ -9,27 +9,46 @@ const srcMdl = new src_model_1.sourceModel();
 class sourceController {
     static async addUpdateTips(req, res) {
         try {
-            const { id, image, status, translations } = await (0, helper_1.validateRequest)(req.body, validator_1.saveTipSchema);
+            const { id, status, title } = await (0, helper_1.validateRequest)(req.body, validator_1.saveTipSchema);
+            let tipId;
             if (id) {
-                const existingTip = await srcMdl.tipFind({
-                    id,
-                });
-                if (!existingTip || existingTip.length === 0) {
+                const existingTip = await srcMdl.tipFind({ id });
+                if (!existingTip?.length) {
                     return (0, helper_1.sendResponse)(res, 200, 0, [], "Tip not found", []);
                 }
-                const updatedTip = await srcMdl.tipUpdate({
+                await srcMdl.tipUpdate({
                     id,
-                    image,
                     status,
-                    translations,
                 });
-                return (0, helper_1.sendResponse)(res, 200, 1, updatedTip, "Tip updated successfully");
+                tipId = id;
             }
-            const createdTip = await srcMdl.tipCreate({
-                image,
-                translations,
+            else {
+                const result = await srcMdl.tipCreate({
+                    status,
+                });
+                tipId = result.insertId;
+            }
+            const languages = await srcMdl.getLanguages();
+            await srcMdl.saveTranslation({
+                module: "daily_tips",
+                record_id: tipId,
+                field_name: "title",
+                lang_code: "en",
+                value: title,
             });
-            return (0, helper_1.sendResponse)(res, 200, 1, createdTip, "Tip created successfully");
+            for (const lang of languages) {
+                if (lang.code === "en")
+                    continue;
+                const translatedValue = await (0, translator_1.translateText)(title, lang.code);
+                await srcMdl.saveTranslation({
+                    module: "daily_tips",
+                    record_id: tipId,
+                    field_name: "title",
+                    lang_code: lang.code,
+                    value: translatedValue,
+                });
+            }
+            return (0, helper_1.sendResponse)(res, 200, 1, [], id ? "Tip updated successfully" : "Tip created successfully", []);
         }
         catch (err) {
             return (0, helper_1.sendResponse)(res, 500, 0, [], "Internal Server Error", err.errors || err.message || err);
@@ -219,10 +238,8 @@ class UploadController {
     }
     static async getUploads(req, res) {
         try {
-            const { page = 1, limit = 20, media_type, id } = req.body;
+            const { media_type, id } = req.body;
             const result = await srcMdl.getUploads({
-                page: Number(page),
-                limit: Number(limit),
                 media_type,
                 id,
             });

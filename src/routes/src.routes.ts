@@ -13,18 +13,9 @@ router.post("/add-tips", (req, res) => {
   required: true,
   schema: {
     id: 1,
-    image: '1',
-    status: 'active',
-    translations: [
-      {
-        lang_code: 'en',
-        desc: 'Drink more water'
-      },
-      {
-        lang_code: 'ta',
-        desc: 'அதிக தண்ணீர் குடிக்கவும்'
-      }
-    ]
+    status: "active or inactive",
+    title : "Drink More Water"
+   
   }
 }
 */
@@ -103,6 +94,5 @@ router.post("/get-country", (req, res) => {
 */
   sourceController.getCountry(req, res);
 });
-
 
 export default router;

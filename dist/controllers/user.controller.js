@@ -26,5 +26,21 @@ class userController {
             return (0, helper_1.sendResponse)(res, 500, 0, [], err.message, []);
         }
     }
+    static async GetProfileData(req, res) {
+        try {
+            const { user_id } = req.body;
+            if (!user_id) {
+                return (0, helper_1.sendResponse)(res, 200, 0, [], "User ID is required", []);
+            }
+            const data = await userMdl.getProfileData(user_id);
+            if (!data) {
+                return (0, helper_1.sendResponse)(res, 200, 0, [], "User not found", []);
+            }
+            return (0, helper_1.sendResponse)(res, 200, 1, [data], "Profile fetched successfully", []);
+        }
+        catch (err) {
+            return (0, helper_1.sendResponse)(res, 500, 0, [], err.message, []);
+        }
+    }
 }
 exports.userController = userController;

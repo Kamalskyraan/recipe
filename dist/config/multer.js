@@ -51,6 +51,6 @@ exports.upload = (0, multer_1.default)({
     storage,
     fileFilter,
     limits: {
-        fileSize: 50 * 1024 * 1024, // 50MB
+        fileSize: 20 * 1024 * 1024,
     },
 });
