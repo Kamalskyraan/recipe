@@ -5,10 +5,10 @@
     "description": "Recipe Application API",
     "version": "1.0.0"
   },
-  "host": "food-recipe.skyraantech.com/server/api",
+  "host": "localhost:5001/api",
   "basePath": "/",
   "schemes": [
-    "https"
+    "http"
   ],
   "paths": {
     "/upload": {
@@ -647,9 +647,21 @@
                   "type": "string",
                   "example": "active or inactive"
                 },
+                "tip_img": {
+                  "type": "string",
+                  "example": "1"
+                },
                 "title": {
                   "type": "string",
                   "example": "Drink More Water"
+                },
+                "desc": {
+                  "type": "string",
+                  "example": "Bananas ripen quickly because they release a   natural gas called ethylene, especially from the   stem. By wrapping the stem, you can slow down   this process and keep your bananas fresh for a   longer time."
+                },
+                "tips": {
+                  "type": "string",
+                  "example": "Bananas ripen quickly because they release a   natural gas called ethylene, especially from the   stem. By wrapping the stem, you can slow down   this process and keep your bananas fresh for a   longer time..."
                 }
               }
             }
@@ -765,7 +777,7 @@
                   "type": "string",
                   "example": "active"
                 },
-                "name": {
+                "country_name": {
                   "type": "string",
                   "example": "India"
                 }

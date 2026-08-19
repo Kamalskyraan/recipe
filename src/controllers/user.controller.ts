@@ -55,4 +55,21 @@ export class userController {
       return sendResponse(res, 500, 0, [], err.message, []);
     }
   }
+
+  static async getProfileDatas(req: Request, res: Response) {
+    try {
+      const { id, profile_name, status, char_length } = req.body;
+      await userMdl.getProfileDatas({ id, profile_name, status });
+      return sendResponse(
+        res,
+        200,
+        1,
+        [],
+        "Profile Datas Fetched Successfully",
+        [],
+      );
+    } catch (err) {
+      return sendResponse(res, 500, 0, [], "Internal Server Error", [err]);
+    }
+  }
 }

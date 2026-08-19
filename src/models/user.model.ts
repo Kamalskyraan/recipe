@@ -1,5 +1,6 @@
+import { string } from "joi";
 import { IProfileAdd } from "../interfaces/user.interface";
-import { executeQuery } from "../utils/helper";
+import { executeQuery, sendResponse } from "../utils/helper";
 import { sourceModel } from "./src.model";
 
 const srcMdl = new sourceModel();
@@ -72,5 +73,17 @@ export class userModel {
     } catch (err) {
       throw err;
     }
+  }
+  async getProfileDatas(data: any) {
+    const query = `
+      SELECT
+        user_id,
+        name AS user_name,
+        email,
+        profile_img
+      FROM users
+      WHERE user_id = ?
+      LIMIT 1
+    `;
   }
 }

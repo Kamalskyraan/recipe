@@ -14,7 +14,18 @@ router.post("/add-tips", (req, res) => {
   schema: {
     id: 1,
     status: "active or inactive",
-    title : "Drink More Water"
+    tip_img : "1",
+    title : "Drink More Water",
+    desc : "Bananas ripen quickly because they release a
+ natural gas called ethylene, especially from the 
+stem. By wrapping the stem, you can slow down 
+this process and keep your bananas fresh for a 
+longer time.",
+  tips : "Bananas ripen quickly because they release a
+ natural gas called ethylene, especially from the 
+stem. By wrapping the stem, you can slow down 
+this process and keep your bananas fresh for a 
+longer time..."
    
   }
 }
@@ -56,43 +67,7 @@ router.post("/get-random-tips", (req, res) => {
   sourceController.getRandomTips(req, res);
 });
 
-// country
 
-router.post("/add-country", (req, res) => {
-  /*
-#swagger.tags = ['3.Country']
-#swagger.summary = 'Create or Update Country'
 
-#swagger.parameters['body'] = {
-  in: 'body',
-  required: true,
-  schema: {
-    id: 1,
-    image: '1',
-    status: 'active',
-   name : 'India'
-  }
-}
-*/
-  sourceController.addUpdateCountry(req, res);
-});
-
-router.post("/get-country", (req, res) => {
-  /*
-#swagger.tags = ['3.Country']
-#swagger.summary = 'Get All Countries'
-
-#swagger.parameters['body'] = {
-  in: 'body',
-  required: false,
-  schema: {
-    id: 1,
-    status: 'active',
-    lang_code: 'ta'
-  }
-}
-*/
-  sourceController.getCountry(req, res);
-});
 
 export default router;

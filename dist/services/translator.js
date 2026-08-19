@@ -1,16 +1,30 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.translateText = void 0;
-const google_translate_api_x_1 = require("google-translate-api-x");
-const translateText = async (text, targetLang) => {
+const axios_1 = __importDefault(require("axios"));
+const TRANSLATE_API = "https://transmodel.skyraantech.com/server/translate";
+const translateText = async (text, targetLang, sourceLang = "en") => {
     try {
-        const result = await (0, google_translate_api_x_1.translate)(text, {
-            to: targetLang,
+        const { data } = await axios_1.default.post(TRANSLATE_API, {
+            text,
+            source: sourceLang,
+            target: targetLang,
+        }, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            timeout: 60000,
         });
-        return result.text;
+        if (data?.success) {
+            return data.translated;
+        }
+        return text;
     }
-    catch (error) {
-        console.log("Translation Error:", error);
+    catch (err) {
+        console.error("Translation API Error:", err?.response?.data || err.message);
         return text;
     }
 };

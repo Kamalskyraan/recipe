@@ -2,7 +2,15 @@ import Joi from "joi";
 
 export const saveTipSchema = Joi.object({
   id: Joi.number().integer().optional(),
-
+  tip_img: Joi.string().required().messages({
+    "any.required": "Tip Image is required",
+  }),
+  desc: Joi.string().required().messages({
+    "any.required": "Desc is required",
+  }),
+  tips: Joi.string().required().messages({
+    "any.required": "Tips is required",
+  }),
   status: Joi.string().valid("active", "inactive").optional(),
 });
 
@@ -11,11 +19,14 @@ export const addCountrySchema = Joi.object({
   image: Joi.string().required().messages({
     "any.required": "Image is required",
   }),
-  name: Joi.string().required().messages({
-    "any.required": "Name is required",
+  country_name: Joi.string().required().messages({
+    "any.required": "Country Name is required",
   }),
   status: Joi.string().valid("active", "inactive").optional(),
 });
+
+
+
 
 export const signupSchema = Joi.object({
   user_name: Joi.string().trim().min(3).max(50).required().messages({

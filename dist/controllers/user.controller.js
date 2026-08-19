@@ -42,5 +42,15 @@ class userController {
             return (0, helper_1.sendResponse)(res, 500, 0, [], err.message, []);
         }
     }
+    static async getProfileDatas(req, res) {
+        try {
+            const { id, profile_name, status, char_length } = req.body;
+            await userMdl.getProfileDatas({ id, profile_name, status });
+            return (0, helper_1.sendResponse)(res, 200, 1, [], "Profile Datas Fetched Successfully", []);
+        }
+        catch (err) {
+            return (0, helper_1.sendResponse)(res, 500, 0, [], "Internal Server Error", [err]);
+        }
+    }
 }
 exports.userController = userController;

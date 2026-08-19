@@ -9,7 +9,7 @@ const srcMdl = new src_model_1.sourceModel();
 class sourceController {
     static async addUpdateTips(req, res) {
         try {
-            const { id, status, title } = await (0, helper_1.validateRequest)(req.body, validator_1.saveTipSchema);
+            const { id, status, tip_img, title, desc, tips } = await (0, helper_1.validateRequest)(req.body, validator_1.saveTipSchema);
             let tipId;
             if (id) {
                 const existingTip = await srcMdl.tipFind({ id });
@@ -19,34 +19,48 @@ class sourceController {
                 await srcMdl.tipUpdate({
                     id,
                     status,
+                    tip_img,
                 });
                 tipId = id;
             }
             else {
                 const result = await srcMdl.tipCreate({
                     status,
+                    tip_img,
                 });
                 tipId = result.insertId;
             }
             const languages = await srcMdl.getLanguages();
-            await srcMdl.saveTranslation({
-                module: "daily_tips",
-                record_id: tipId,
-                field_name: "title",
-                lang_code: "en",
-                value: title,
-            });
-            for (const lang of languages) {
-                if (lang.code === "en")
-                    continue;
-                const translatedValue = await (0, translator_1.translateText)(title, lang.code);
+            const fields = [
+                { field: "title", value: title },
+                { field: "desc", value: desc },
+                { field: "tips", value: tips },
+            ];
+            for (const item of fields) {
                 await srcMdl.saveTranslation({
                     module: "daily_tips",
                     record_id: tipId,
-                    field_name: "title",
-                    lang_code: lang.code,
-                    value: translatedValue,
+                    field_name: item.field,
+                    lang_code: "en",
+                    value: item.value || "",
                 });
+            }
+            // OTHER LANGUAGES
+            for (const lang of languages) {
+                if (lang.code === "en")
+                    continue;
+                for (const item of fields) {
+                    const translatedValue = item.value
+                        ? await (0, translator_1.translateText)(item.value, lang.code)
+                        : "";
+                    await srcMdl.saveTranslation({
+                        module: "daily_tips",
+                        record_id: tipId,
+                        field_name: item.field,
+                        lang_code: lang.code,
+                        value: translatedValue,
+                    });
+                }
             }
             return (0, helper_1.sendResponse)(res, 200, 1, [], id ? "Tip updated successfully" : "Tip created successfully", []);
         }
@@ -62,7 +76,18 @@ class sourceController {
                 status,
                 lang_code,
             });
-            return (0, helper_1.sendResponse)(res, 200, 1, [tipsData], "Tips Fetched Successfully", []);
+            for (const tip of tipsData) {
+                if (tip.tip_img) {
+                    const media = await srcMdl.getUploads({
+                        id: tip.tip_img,
+                    });
+                    tip.tip_img = media?.data?.[0] || {};
+                }
+                else {
+                    tip.tip_img = {};
+                }
+            }
+            return (0, helper_1.sendResponse)(res, 200, 1, tipsData, "Tips Fetched Successfully", []);
         }
         catch (err) {
             return (0, helper_1.sendResponse)(res, 500, 0, [], "Internal Server Error", err.errors || err.message || err);
@@ -78,7 +103,16 @@ class sourceController {
             if (!tip) {
                 return (0, helper_1.sendResponse)(res, 200, 0, [], "No tips found", []);
             }
-            return (0, helper_1.sendResponse)(res, 200, 1, tip, "Random Tip Fetched Successfully", []);
+            if (tip.tip_img) {
+                const media = await srcMdl.getUploads({
+                    id: tip.tip_img,
+                });
+                tip.tip_img = media?.data?.[0] || {};
+            }
+            else {
+                tip.tip_img = {};
+            }
+            return (0, helper_1.sendResponse)(res, 200, 1, [tip], "Random Tip Fetched Successfully", []);
         }
         catch (err) {
             return (0, helper_1.sendResponse)(res, 500, 0, [], "Internal Server Error", err?.message || err);
@@ -87,15 +121,14 @@ class sourceController {
     // country
     static async addUpdateCountry(req, res) {
         try {
-            const { id, image, name, status } = await (0, helper_1.validateRequest)(req.body, validator_1.addCountrySchema);
-            let countryId;
-            if (id) {
+            const { id, image, country_name, status } = await (0, helper_1.validateRequest)(req.body, validator_1.addCountrySchema);
+            let countryId = id;
+            if (countryId) {
                 await srcMdl.updateCountry({
-                    id,
+                    id: countryId,
                     image,
                     status,
                 });
-                countryId = id;
             }
             else {
                 const result = await srcMdl.addCountry({
@@ -106,20 +139,20 @@ class sourceController {
             }
             const languages = await srcMdl.getLanguages();
             await srcMdl.saveTranslation({
-                module: "country",
+                module: "country_translations",
                 record_id: countryId,
-                field_name: "name",
+                field_name: "country_name",
                 lang_code: "en",
-                value: name,
+                value: country_name,
             });
             for (const lang of languages) {
                 if (lang.code === "en")
                     continue;
-                const translatedValue = await (0, translator_1.translateText)(name, lang.code);
+                const translatedValue = await (0, translator_1.translateText)(country_name, lang.code);
                 await srcMdl.saveTranslation({
-                    module: "country",
+                    module: "country_translations",
                     record_id: countryId,
-                    field_name: "name",
+                    field_name: "country_name",
                     lang_code: lang.code,
                     value: translatedValue,
                 });

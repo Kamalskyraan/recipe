@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import router from "./routes/index";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./docs/swagger-output.json";
+import { connectRedis } from "./config/redis";
 dotenv.config();
 
 const app = express();
@@ -14,6 +15,13 @@ const PORT = process.env.PORT || 5000;
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/uploads", express.static("uploads"));
-app.listen(PORT, () => {
-  console.log(`Server Running on ${PORT}`);
-});
+
+async function startServer() {
+  await connectRedis();
+
+  app.listen(PORT, () => {
+    console.log(`Server is swimming on PORT ${PORT}`);
+  });
+}
+
+startServer();

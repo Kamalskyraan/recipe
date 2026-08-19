@@ -70,21 +70,24 @@ export class sourceModel {
     let query = `
     SELECT
       t.id,
+      COALESCE(t.tip_img, '') AS tip_img,
       COALESCE(t.status,'') AS status,
       COALESCE(tr.value,'') AS \`desc\`
-
     FROM daily_tips t
-
-    INNER JOIN translations tr
+    INNER JOIN dyn_translations tr
       ON tr.module = 'daily_tips'
       AND tr.record_id = t.id
       AND tr.field_name = 'desc'
       AND tr.lang_code = ?
-
-    WHERE 1 = 1
+    WHERE 1=1
   `;
 
-    const values = [lang_code];
+    const values: any[] = [lang_code];
+
+    if (id) {
+      query += ` AND t.id = ?`;
+      values.push(id);
+    }
 
     if (status) {
       query += ` AND t.status = ?`;
@@ -101,12 +104,11 @@ export class sourceModel {
   async getRandomTip(data: IrandTip) {
     const { lang_code = "en", c_date } = data;
 
-    // Get total active tips having translation for selected language
     const countResult: any = await executeQuery(
       `
     SELECT COUNT(*) AS total
     FROM daily_tips t
-    INNER JOIN translations tr
+    INNER JOIN dyn_translations tr
       ON tr.module = 'daily_tips'
       AND tr.record_id = t.id
       AND tr.field_name = 'desc'
@@ -126,21 +128,18 @@ export class sourceModel {
       return null;
     }
 
-    // Current date or today's date
     const currentDate = c_date ? new Date(c_date) : new Date();
 
     if (isNaN(currentDate.getTime())) {
       throw new Error("Invalid c_date");
     }
 
-    // Fixed base date
     const baseDate = new Date("2026-01-01");
 
     const diffDays = Math.floor(
       (currentDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24),
     );
 
-    // Rotation logic
     const offset = ((diffDays % totalTips) + totalTips) % totalTips;
 
     const result: any = await executeQuery(
@@ -150,19 +149,14 @@ export class sourceModel {
       COALESCE(t.tip_img, '') AS tip_img,
       COALESCE(t.status, '') AS status,
       COALESCE(tr.value, '') AS description
-
     FROM daily_tips t
-
-    INNER JOIN translations tr
+    INNER JOIN dyn_translations tr
       ON tr.module = 'daily_tips'
       AND tr.record_id = t.id
       AND tr.field_name = 'desc'
       AND tr.lang_code = ?
-
     WHERE t.status = 'active'
-
     ORDER BY t.id ASC
-
     LIMIT 1 OFFSET ?
     `,
       [lang_code, offset],
@@ -207,43 +201,10 @@ export class sourceModel {
 
     return result;
   }
-  async saveTranslation(data: any) {
-    await executeQuery(
-      `
-    INSERT INTO dyn_translations
-    (
-      module,
-      record_id,
-      field_name,
-      lang_code,
-      value
-    )
-    VALUES (?, ?, ?, ?, ?)
-    ON DUPLICATE KEY UPDATE
-    value = VALUES(value)
-    `,
-      [
-        data.module,
-        data.record_id,
-        data.field_name,
-        data.lang_code,
-        data.value,
-      ],
-    );
-  }
-
-  async getLanguages() {
-    const rows: any = await executeQuery(`
-    SELECT code
-    FROM languages
-    WHERE status = 1
-  `);
-
-    return rows;
-  }
 
   async getCountry(data: any) {
     const { id, lang_code = "en", status } = data;
+
     let query = `
     SELECT
       c.id,
@@ -252,22 +213,22 @@ export class sourceModel {
       COALESCE(t_lang.value, t_en.value, '') AS name
     FROM country c
 
-    INNER JOIN dyn_translations t_lang
+    LEFT JOIN dyn_translations t_lang
       ON t_lang.module = 'country'
       AND t_lang.record_id = c.id
       AND t_lang.field_name = 'name'
       AND t_lang.lang_code = ?
 
-    INNER JOIN dyn_translations t_en
+    LEFT JOIN dyn_translations t_en
       ON t_en.module = 'country'
       AND t_en.record_id = c.id
       AND t_en.field_name = 'name'
       AND t_en.lang_code = 'en'
 
-    WHERE 1 = 1
+    WHERE 1=1
   `;
 
-    const params = [lang_code];
+    const params: any[] = [lang_code];
 
     if (id) {
       query += ` AND c.id = ?`;
@@ -279,9 +240,75 @@ export class sourceModel {
       params.push(status);
     }
 
-    query += ` ORDER BY c.id DESC`;
+    query += ` GROUP BY c.id ORDER BY c.id DESC`;
 
-    const rows = await executeQuery(query, params);
+    const rows: any[] = await executeQuery(query, params);
+
+    if (!rows.length) {
+      return [];
+    }
+
+    const imageIds = [
+      ...new Set(
+        rows
+          .map((row) => row.image)
+          .filter((id) => id !== null && id !== undefined),
+      ),
+    ];
+
+    const mediaMap = new Map();
+
+    if (imageIds.length) {
+      const mediaResult = await this.getUploads({
+        id: imageIds,
+      });
+
+      mediaResult.data.forEach((media: any) => {
+        mediaMap.set(String(media.id), media);
+      });
+    }
+
+    return rows.map((row) => ({
+      ...row,
+      image: mediaMap.get(String(row.image)) || {},
+    }));
+  }
+
+  //
+
+  async saveTranslation(data: {
+    module: string;
+    record_id: number;
+    field_name: string;
+    lang_code: string;
+    value: string;
+  }) {
+    const { module, record_id, field_name, lang_code, value } = data;
+
+    const foreignKey = module.replace("_translations", "_id");
+
+    await executeQuery(
+      `
+      INSERT INTO ${module}
+      (
+        ${foreignKey},
+        lang_code,
+        ${field_name}
+      )
+      VALUES (?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+      ${field_name} = VALUES(${field_name})
+    `,
+      [record_id, lang_code, value],
+    );
+  }
+
+  async getLanguages() {
+    const rows: any = await executeQuery(`
+    SELECT code
+    FROM languages
+    WHERE status = 1
+  `);
 
     return rows;
   }

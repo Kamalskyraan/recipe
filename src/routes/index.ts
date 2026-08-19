@@ -2,6 +2,7 @@ import { Request, Response, Router } from "express";
 import srcRoutes from "./src.routes";
 import authRoutes from "./auth.routes";
 import userRoutes from "./user.routes";
+import countryRoutes from "./country.routes";
 import { upload } from "../config/multer";
 import { UploadController } from "../controllers/src.controller";
 
@@ -10,7 +11,7 @@ const router = Router();
 router.use("/auth", authRoutes);
 router.use("/src", srcRoutes);
 router.use("/user", userRoutes);
-
+router.use("/country" , countryRoutes)
 // img
 
 router.post(

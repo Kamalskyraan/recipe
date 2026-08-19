@@ -65,5 +65,17 @@ class userModel {
             throw err;
         }
     }
+    async getProfileDatas(data) {
+        const query = `
+      SELECT
+        user_id,
+        name AS user_name,
+        email,
+        profile_img
+      FROM users
+      WHERE user_id = ?
+      LIMIT 1
+    `;
+    }
 }
 exports.userModel = userModel;

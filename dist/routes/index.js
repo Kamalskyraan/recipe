@@ -7,12 +7,14 @@ const express_1 = require("express");
 const src_routes_1 = __importDefault(require("./src.routes"));
 const auth_routes_1 = __importDefault(require("./auth.routes"));
 const user_routes_1 = __importDefault(require("./user.routes"));
+const country_routes_1 = __importDefault(require("./country.routes"));
 const multer_1 = require("../config/multer");
 const src_controller_1 = require("../controllers/src.controller");
 const router = (0, express_1.Router)();
 router.use("/auth", auth_routes_1.default);
 router.use("/src", src_routes_1.default);
 router.use("/user", user_routes_1.default);
+router.use("/country", country_routes_1.default);
 // img
 router.post("/upload", 
 /*

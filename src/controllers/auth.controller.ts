@@ -405,7 +405,4 @@ export class AuthController {
       );
     }
   }
-
-
-  
 }

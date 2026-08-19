@@ -8,6 +8,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const index_1 = __importDefault(require("./routes/index"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const swagger_output_json_1 = __importDefault(require("./docs/swagger-output.json"));
+const redis_1 = require("./config/redis");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
@@ -15,6 +16,10 @@ app.use("/api", index_1.default);
 const PORT = process.env.PORT || 5000;
 app.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_output_json_1.default));
 app.use("/uploads", express_1.default.static("uploads"));
-app.listen(PORT, () => {
-    console.log(`Server Running on ${PORT}`);
-});
+async function startServer() {
+    await (0, redis_1.connectRedis)();
+    app.listen(PORT, () => {
+        console.log(`Server is swimming on PORT ${PORT}`);
+    });
+}
+startServer();
