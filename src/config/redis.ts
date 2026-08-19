@@ -1,7 +1,11 @@
 import { createClient } from "redis";
 
 export const redisClient = createClient({
-  url: process.env.REDIS_URL || "redis://127.0.0.1:6379",
+  socket: {
+    host: process.env.REDIS_HOST || "127.0.0.1",
+    port: Number(process.env.REDIS_PORT || 6379),
+  },
+  password: process.env.REDIS_PASSWORD,
 });
 
 redisClient.on("connect", () => {
@@ -19,6 +23,6 @@ export const connectRedis = async () => {
     }
   } catch (err) {
     console.error("Redis Connection Failed:", err);
-    process.exit(1); 
+    process.exit(1);
   }
 };
