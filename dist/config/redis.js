@@ -19,7 +19,7 @@ const connectRedis = async () => {
     }
     catch (err) {
         console.error("Redis Connection Failed:", err);
-        process.exit(1); // Stop the app if Redis is required
+        process.exit(1);
     }
 };
 exports.connectRedis = connectRedis;
